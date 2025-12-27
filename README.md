@@ -1,3 +1,13 @@
+---
+title: Parking Spot Occupancy Detection
+emoji: 🚗
+colorFrom: blue
+colorTo: indigo
+sdk: gradio
+app_file: app.py
+pinned: false
+---
+
 # Parking Spot Occupancy Detection (CNN)
 
 Simple image classification project that detects whether a parking spot is empty or occupied using a custom CNN built with PyTorch.
