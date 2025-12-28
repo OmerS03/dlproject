@@ -1,0 +1,7 @@
+# Dataset and generated artifacts
+dataset/
+parking_model.pth
+
+# Python cache
+__pycache__/
+*.pyc
