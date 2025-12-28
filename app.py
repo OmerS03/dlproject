@@ -1,3 +1,5 @@
+import os
+
 import torch
 import gradio as gr
 from PIL import Image
@@ -6,30 +8,38 @@ from torchvision import transforms
 from model import ParkingCNN
 
 
-def load_model(weights_path: str = "parking_model.pth"):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+WEIGHTS_PATH = os.getenv("PARKING_MODEL_PATH", "parking_model.pth")
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+TRANSFORM = transforms.Compose(
+    [
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+    ]
+)
+
+
+def load_model(weights_path: str = WEIGHTS_PATH):
+    if not os.path.isfile(weights_path):
+        raise FileNotFoundError(
+            f"Model weights not found: {weights_path}. "
+            "Place parking_model.pth in the project root or set PARKING_MODEL_PATH."
+        )
     model = ParkingCNN(num_classes=2)
-    model.load_state_dict(torch.load(weights_path, map_location=device))
-    model.to(device)
+    model.load_state_dict(torch.load(weights_path, map_location=DEVICE))
+    model.to(DEVICE)
     model.eval()
-    return model, device
+    return model
+
+
+MODEL = load_model()
 
 
 def predict(image: Image.Image):
-    model, device = load_model()
-
-    transform = transforms.Compose(
-        [
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-        ]
-    )
-
     image = image.convert("RGB")
-    tensor = transform(image).unsqueeze(0).to(device)
+    tensor = TRANSFORM(image).unsqueeze(0).to(DEVICE)
 
     with torch.no_grad():
-        outputs = model(tensor)
+        outputs = MODEL(tensor)
         predicted = torch.argmax(outputs, dim=1).item()
 
     if predicted == 0:
